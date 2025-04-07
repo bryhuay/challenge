@@ -1,9 +1,10 @@
+
 export class Item {
     name: string;
     sellIn: number;
     quality: number;
 
-    constructor(name, sellIn, quality) {
+    constructor(name:string, sellIn:number, quality:number) {
         this.name = name;
         this.sellIn = sellIn;
         this.quality = quality;
@@ -122,7 +123,7 @@ export class GildedRose {
             case 'Backstage passes to a TAFKAL80ETC concert':
                 return new BackstagePass(item);
             case 'Sulfuras, Hand of Ragnaros':
-                return new Sulfuras(item); // Handle Sulfuras separately
+                return new Sulfuras(item); 
             default:
                 if (item.name.startsWith('Conjured')) {
                     return new ConjuredItem(item);
@@ -156,3 +157,21 @@ class Sulfuras implements ItemType {
         // Sulfuras no cambia en sellin
     }
 }
+
+//Pruebas
+
+const items = [
+    new Item('Aged Brie', 10, 20),
+    new Item('Sulfuras, Hand of Ragnaros', 0, 80),
+    new Item('Backstage passes to a TAFKAL80ETC concert', 15, 20),
+    new Item('Normal Item', 5, 10),
+    new Item('Conjured Item', 3, 6),
+];
+
+const gildedRose = new GildedRose(items);
+
+// Actualizar la calidad de los items
+gildedRose.updateQuality();
+
+console.log(gildedRose.items);
+   
