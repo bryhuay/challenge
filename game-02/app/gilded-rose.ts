@@ -10,88 +10,149 @@ export class Item {
     }
 }
 
+interface ItemType {
+    updateQuality(): void;
+    updateSellIn(): void;
+}
+
+// Implement specific item classes
+class AgedBrie implements ItemType {
+    private item: Item;
+
+    constructor(item: Item) {
+        this.item = item;
+    }
+
+    updateQuality() {
+        if (this.item.quality < 50) {
+            this.item.quality++;
+        }
+    }
+
+    updateSellIn() {
+        this.item.sellIn--;
+    }
+}
+
+class BackstagePass implements ItemType {
+    private item: Item;
+
+    constructor(item: Item) {
+        this.item = item;
+    }
+
+    updateQuality() {
+        if (this.item.quality < 50) {
+            this.item.quality++;
+            if (this.item.sellIn < 11) {
+                if (this.item.quality < 50) {
+                    this.item.quality++;
+                }
+            }
+            if (this.item.sellIn < 6) {
+                if (this.item.quality < 50) {
+                    this.item.quality++;
+                }
+            }
+        }
+        if (this.item.sellIn < 0) {
+            this.item.quality = 0;
+        }
+    }
+
+    updateSellIn() {
+        this.item.sellIn--;
+    }
+}
+
+class NormalItem implements ItemType {
+    private item: Item;
+
+    constructor(item: Item) {
+        this.item = item;
+    }
+
+    updateQuality() {
+        if (this.item.quality > 0) {
+            this.item.quality--;
+        }
+        if (this.item.sellIn < 0 && this.item.quality > 0) {
+            this.item.quality--;
+        }
+    }
+
+    updateSellIn() {
+        this.item.sellIn--;
+    }
+}
+
+class ConjuredItem implements ItemType {
+    private item: Item;
+
+    constructor(item: Item) {
+        this.item = item;
+    }
+
+    updateQuality() {
+        if (this.item.quality > 0) {
+            this.item.quality -= 2;
+        }
+        if (this.item.sellIn < 0 && this.item.quality > 0) {
+            this.item.quality -= 2;
+        }
+    }
+
+    updateSellIn() {
+        this.item.sellIn--;
+    }
+}
+
+// GildedRose class
 export class GildedRose {
-    items: Array<Item>;
+    items: Array<ItemType>;
 
     constructor(items: Array<Item> = []) {
-        this.items = items;
+        this.items = items.map(item => this.createItemType(item));
+    }
+
+    private createItemType(item: Item): ItemType {
+        switch (item.name) {
+            case 'Aged Brie':
+                return new AgedBrie(item);
+            case 'Backstage passes to a TAFKAL80ETC concert':
+                return new BackstagePass(item);
+            case 'Sulfuras, Hand of Ragnaros':
+                return new Sulfuras(item); // Handle Sulfuras separately
+            default:
+                if (item.name.startsWith('Conjured')) {
+                    return new ConjuredItem(item);
+                }
+                return new NormalItem(item);
+        }
     }
 
     updateQuality() {
         for (let item of this.items) {
-            this.updateItemQuality(item);
-            this.updateItemSellIn(item);
+            item.updateQuality();
+            item.updateSellIn();
         }
         return this.items;
     }
+}
 
-    private updateItemQuality(item: Item) {
-        if (item.name === 'Sulfuras, Hand of Ragnaros') {
-            return; // Legendary item, do nothing
-        }
+// Sulfuras class (opcional)
+class Sulfuras implements ItemType {
+    private item: Item;
 
-        if (item.name === 'Aged Brie') {
-            this.updateAgedBrieQuality(item);
-        } else if (item.name === 'Backstage passes to a TAFKAL80ETC concert') {
-            this.updateBackstagePassQuality(item);
-        } else if (item.name.startsWith('Conjured')) {
-            this.updateConjuredItemQuality(item);
-        } else {
-            this.updateNormalItemQuality(item);
-        }
+    constructor(item: Item) {
+        this.item = item;
     }
 
-    private updateAgedBrieQuality(item: Item) {
-        if (item.quality < 50) {
-            item.quality++;
-        }
+    updateQuality() {
+        // Sulfuras no cambia en quality
     }
 
-    private updateBackstagePassQuality(item: Item) {
-        if (item.quality < 50) {
-            item.quality++;
-            if (item.sellIn < 11) {
-                if (item.quality < 50) {
-                    item.quality++;
-                }
-            }
-            if (item.sellIn < 6) {
-                if (item.quality < 50) {
-                    item.quality++;
-                }
-            }
-        }
-        // Quality drops to 0 after the concert
-        if (item.sellIn < 0) {
-            item.quality = 0;
-        }
+    updateSellIn() {
+        // Sulfuras no cambia en sellin
     }
-
-    private updateConjuredItemQuality(item: Item) {
-        this.decreaseQuality(item, 2);
-    }
-
-    private updateNormalItemQuality(item: Item) {
-        this.decreaseQuality(item, 1);
-    }
-
-    private decreaseQuality(item: Item, amount: number) {
-        if (item.quality > 0) {
-            item.quality -= amount;
-        }
-        if (item.sellIn < 0) {
-            item.quality -= amount; // Degrade twice as fast after sell by date
-        }
-        // Ensure quality does not go below 0
-        if (item.quality < 0) {
-            item.quality = 0;
-        }
-    }
-
-    private updateItemSellIn(item: Item) {
-        if (item.name !== 'Sulfuras, Hand of Ragnaros') {
-            item.sellIn--;
-        }
-    }
-
 }
